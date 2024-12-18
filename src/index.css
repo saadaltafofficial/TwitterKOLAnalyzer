@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 10px; /* Adjust the spacing between columns */
+}
+
+th {
+  text-align: left;
+}
+
+td {
+  text-align: left;
+}
