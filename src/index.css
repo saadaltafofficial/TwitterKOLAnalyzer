@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body{
+  font-family: 'inter', sans-serif;
+}
+
 table {
   width: 100%;
   border-collapse: separate;

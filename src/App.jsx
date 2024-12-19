@@ -1,4 +1,8 @@
 import { useState } from "react";
+import Chart from "./components/Chart.jsx";
+import Data from "./components/Data.jsx";
+import Pagination from "./components/pagination.jsx";
+import DarkModeToggle from "./components/DarkModeToggle.jsx";
 
 function App() {
   const [priceHistory, setPriceHistory] = useState([]);
@@ -6,6 +10,17 @@ function App() {
   const [toDate, setToDate] = useState("");
   const [address, setAddress] = useState(""); // New state for the address
   const [loading, setLoading] = useState(false); // State to manage loading status
+  const [chain, setChain] = useState("ethereum");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dataPerPage] = useState(20);
+
+
+  console.log(chain)
+
+  const indexOfLastData = currentPage * dataPerPage;
+  const indexOfFirstData = indexOfLastData - dataPerPage;
+  const currentData = priceHistory.slice(indexOfFirstData, indexOfLastData);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const formatTimestamp = (unixTime) => {
     const date = new Date(unixTime * 1000);
@@ -39,13 +54,14 @@ function App() {
       method: "GET",
       headers: {
         accept: "application/json",
+        'x-chain': `${chain}`,
         "X-API-KEY": "36cc95840e8844408a9ba21af7fc3c28",
       },
     };
 
     try {
       const res = await fetch(
-        `https://public-api.birdeye.so/defi/history_price?address=${address}&address_type=pair&type=15m&time_from=${fromUnix}&time_to=${toUnix}`,
+        `https://public-api.birdeye.so/defi/history_price?address=${address}&address_type=token&type=15m&time_from=${fromUnix}&time_to=${toUnix}`,
         options
       );
       const data = await res.json();
@@ -57,11 +73,26 @@ function App() {
     }
   };
 
-  console.log(priceHistory)
+  const price = priceHistory.map((item) => item.value);
+  const time = priceHistory.map((item) =>
+    new Date(item.unixTime * 1000).toLocaleString('en-US', {
+      // weekday: 'short', // e.g., 'Mon'
+      year: 'numeric',  // e.g., '2021'
+      month: 'short',   // e.g., 'Nov'
+      day: 'numeric',   // e.g., '30'
+      hour: '2-digit',  // e.g., '12'
+      // minute: '2-digit',// e.g., '00'
+      // second: '2-digit',// e.g., '00'
+    })
+  );
+  console.log(time);
+  console.log(price);
 
   return (
     <>
-      <main>
+      <main className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white px-4 py-8">
+      <DarkModeToggle />
+      <h1 className="text-center">APP</h1>
         {/* Date and Address Input Form */}
         <form
           onSubmit={(e) => {
@@ -70,11 +101,31 @@ function App() {
           }}
         >
           <label>
+            Selec Chain:
+            <select
+              name="chain"
+              value={chain}
+              onChange={(e) => setChain(e.target.value)}
+              className="font-[inter] block mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-[#40403f] "
+            >
+              <option value="ethereum">Ethereum</option>
+              <option value="solana">Solana</option>
+              <option value="bsc">Binance Smart Chain</option>
+              <option value="polygon">Polygon</option>
+              <option value="avalanche">Avalanche</option>
+              <option value="arbitrum">Arbitrum</option>
+              <option value="base">Base</option>
+              <option value="zksync">Zksync</option>
+              <option value="sui">Sui</option>
+            </select>
+          </label>
+          <label>
             From Date:
             <input
               type="datetime-local"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
+              className="block mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm  dark:text-[#40403f]"
             />
           </label>
           <br />
@@ -84,6 +135,7 @@ function App() {
               type="datetime-local"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
+              className="block mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm  dark:text-[#40403f]"
             />
           </label>
           <br />
@@ -93,34 +145,27 @@ function App() {
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              className="block mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm  dark:text-[#40403f]"
               placeholder="Enter address"
             />
           </label>
           <br />
-          <button type="button" onClick={fetchApi} disabled={loading}>
+          <button 
+          type="button" 
+          onClick={fetchApi} 
+          disabled={loading}
+          className="block mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-[#40403f]"
+          >
             {loading ? "Fetching..." : "Fetch Data"}
           </button>
         </form>
 
         {/* Table to Display Price History */}
-        <table>
-          <thead>
-            <tr>
-              <th>Address</th>
-              <th>Price</th>
-              <th>Date and Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {priceHistory.map((item) => (
-              <tr key={item.unixTime}>
-                <td>{item.address}</td>
-                <td>{item.value}</td>
-                <td>{formatTimestamp(item.unixTime)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="">
+          {priceHistory.length > 0 ? <Chart time={time} price={price} /> : null}
+        </div>
+        <Data formatTimestamp={formatTimestamp} currentData={currentData} />
+        <Pagination dataPerPage={dataPerPage} totalData={priceHistory.length} paginate={paginate} />
       </main>
     </>
   );
