@@ -37,8 +37,8 @@ const Chart = ({ time, price }) => {
       {
         label: 'Price History',
         data: price,  // Price array for y-axis
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgb(125, 102, 240, 1)',
+        backgroundColor: 'rgb(125, 102, 240, 0.2)',
         fill: true,
         tension: 0.4,
       },
@@ -77,4 +77,5 @@ Chart.propTypes = {
   price: PropTypes.array.isRequired,
 };
 export default Chart;
+
 

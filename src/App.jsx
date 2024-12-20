@@ -3,6 +3,8 @@ import Chart from "./components/Chart.jsx";
 import Data from "./components/Data.jsx";
 import Pagination from "./components/pagination.jsx";
 import DarkModeToggle from "./components/DarkModeToggle.jsx";
+import calculateCompletePriceChange from "./priceChange.js";
+import Chart2 from "./components/Chart2.jsx";
 
 function App() {
   const [priceHistory, setPriceHistory] = useState([]);
@@ -12,10 +14,7 @@ function App() {
   const [loading, setLoading] = useState(false); // State to manage loading status
   const [chain, setChain] = useState("ethereum");
   const [currentPage, setCurrentPage] = useState(1);
-  const [dataPerPage] = useState(20);
-
-
-  console.log(chain)
+  const [dataPerPage] = useState(10);
 
   const indexOfLastData = currentPage * dataPerPage;
   const indexOfFirstData = indexOfLastData - dataPerPage;
@@ -81,18 +80,28 @@ function App() {
       month: 'short',   // e.g., 'Nov'
       day: 'numeric',   // e.g., '30'
       hour: '2-digit',  // e.g., '12'
-      // minute: '2-digit',// e.g., '00'
-      // second: '2-digit',// e.g., '00'
+      minute: '2-digit',// e.g., '00'
+      second: '2-digit',// e.g., '00'
     })
   );
-  console.log(time);
-  console.log(price);
+
+
+  function priceChange() {
+    if (priceHistory.length > 0) {
+      return calculateCompletePriceChange(priceHistory);
+    }
+  }
 
   return (
     <>
+
       <main className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white px-4 py-8">
-      <DarkModeToggle />
-      <h1 className="text-center">APP</h1>
+        <div className="flex justify-between">
+          <h1 className="text-center">APP</h1>
+          <DarkModeToggle />
+
+        </div>
+    
         {/* Date and Address Input Form */}
         <form
           onSubmit={(e) => {
@@ -101,7 +110,7 @@ function App() {
           }}
         >
           <label>
-            Selec Chain:
+            Select Chain:
             <select
               name="chain"
               value={chain}
@@ -150,22 +159,33 @@ function App() {
             />
           </label>
           <br />
-          <button 
-          type="button" 
-          onClick={fetchApi} 
-          disabled={loading}
-          className="block mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-[#40403f]"
+          <button
+            type="button"
+            onClick={fetchApi}
+            disabled={loading}
+            className="block mt-1 py-2 px-3 border-none border-gray-300 bg-indigo-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
           >
             {loading ? "Fetching..." : "Fetch Data"}
           </button>
         </form>
 
         {/* Table to Display Price History */}
-        <div className="">
-          {priceHistory.length > 0 ? <Chart time={time} price={price} /> : null}
+        
+        <div className="my-8 h-[400px]">
+          <Chart2 />
         </div>
-        <Data formatTimestamp={formatTimestamp} currentData={currentData} />
-        <Pagination dataPerPage={dataPerPage} totalData={priceHistory.length} paginate={paginate} />
+        {priceHistory.length > 0 ? 
+        <div className="text-center font-medium tracking-wide text-[#9b9c9c]">
+          Price Change: {priceChange().change}</div> : null}
+        <div className="my-8">
+          {priceHistory.length > 0 ?  <Chart time={time} price={price} /> : null}
+        </div>
+        {priceHistory.length ?
+          <>
+            <Data formatTimestamp={formatTimestamp} currentData={currentData} />
+            <Pagination dataPerPage={dataPerPage} totalData={priceHistory.length} paginate={paginate} currentPage={currentPage} />
+          </>
+          : <div className="text-center font-medium tracking-wide text-[#9b9c9c]">search to see results here</div>}
       </main>
     </>
   );

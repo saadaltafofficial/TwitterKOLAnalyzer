@@ -11,7 +11,7 @@ const Data = ({currentData, formatTimestamp}) => {
               <th>Date and Time</th>
             </tr>
           </thead>
-          <tbody className=' '>
+          <tbody>
             {currentData.map((item) => (
               <tr key={item.unixTime} className='text-left'>
                 {/* <td>{item.address}</td> */}
